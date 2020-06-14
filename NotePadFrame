@@ -1,0 +1,97 @@
+package notepad;
+import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import java.awt.*;
+import java.io.*;
+import java.util.Scanner;
+
+public class NotepadFrame extends JFrame {
+    private JTextArea textArea;
+    private JFileChooser fileChooser;
+    private File selectedFile;
+
+    public NotepadFrame(String title, int width, int height) throws HeadlessException {
+        selectedFile = null;
+        setLayout(new BorderLayout());
+        add(new NotepadMenuBar(this), BorderLayout.NORTH);
+        initElements();
+        addTextArea();
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(new Dimension(width, height));
+        setTitle(title);
+    }
+
+    public void openFile() throws FileNotFoundException {
+        int result = fileChooser.showOpenDialog(this);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            selectedFile = fileChooser.getSelectedFile();
+            setTextAreaTextFromScanner(new Scanner(selectedFile));
+        }
+    }
+
+    public void saveFile() throws IOException {
+        if (selectedFile == null) {
+            saveAs();
+        } else {
+            saveTextAreaTextToFile(selectedFile);
+        }
+    }
+
+    public void saveAs() throws IOException {
+        int result = fileChooser.showDialog(this, "New file");
+        if (result == JFileChooser.APPROVE_OPTION) {
+            selectedFile = fileChooser.getSelectedFile();
+            selectedFile = new File(selectedFile.getPath() + ".txt");
+            saveTextAreaTextToFile(selectedFile);
+        }
+    }
+
+    public void encrypt(String key) {
+        String text = textArea.getText();
+        String encryptedText = XORCiper(text, key);
+        textArea.setText(encryptedText);
+    }
+
+    private void setTextAreaTextFromScanner(Scanner in) {
+        StringBuilder resultText = new StringBuilder();
+        while (in.hasNext()) {
+            resultText.append(in.nextLine()).append('\n');
+        }
+        textArea.setText(resultText.toString());
+    }
+
+    private void saveTextAreaTextToFile(File file) throws IOException {
+
+        FileWriter writer = new FileWriter(selectedFile.getPath(), false);
+        writer.write(textArea.getText());
+        writer.close();
+        System.out.println("saving text " + textArea.getText());
+    }
+
+    private void initElements() {
+        textArea = new JTextArea();
+        fileChooser = new JFileChooser();
+        fileChooser.setFileFilter(new FileNameExtensionFilter("Text files", "txt"));
+    }
+
+    private void addTextArea() {
+        JScrollPane scrollPane = new JScrollPane(textArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        add(scrollPane);
+    }
+
+    private String XORCiper(String text, String key) {
+        StringBuilder builder = new StringBuilder();
+
+        for (int i = 0; i < text.length(); i++) {
+            builder.append((char) (text.charAt(i) ^ key.charAt(i % key.length())));
+        }
+        return builder.toString();
+    }
+
+    public static void main(String[] args) {
+        EventQueue.invokeLater(() -> {
+            NotepadFrame notepad = new NotepadFrame("Notepad", 800, 600);
+            notepad.setVisible(true);
+        });
+    }
+}
