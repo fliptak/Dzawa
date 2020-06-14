@@ -1,0 +1,89 @@
+package notepad;
+
+import javax.swing.*;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
+public class NotepadMenuBar extends JMenuBar {
+    private NotepadFrame notepadFrame;
+    private JMenu fileMenu;
+    private JMenuItem openItem;
+    private JMenuItem saveItem;
+    private JMenuItem saveAsItem;
+    private JMenu encryptingMenu;
+    private JMenuItem encryptItem;
+
+    public NotepadMenuBar(NotepadFrame notepadFrame) {
+        this.notepadFrame = notepadFrame;
+        initElements();
+        addElements();
+        addListeners();
+    }
+
+    private void initElements() {
+        fileMenu = new JMenu("File");
+        openItem = new JMenuItem("Open");
+        saveItem = new JMenuItem("Save");
+        saveAsItem = new JMenuItem("Save as");
+        encryptingMenu = new JMenu("Encrypting");
+        encryptItem = new JMenuItem("Encrypt");
+    }
+
+    private void addElements() {
+        addElementsToFileMenu();
+        addElementsToEncryptingMenu();
+
+        add(fileMenu);
+        add(encryptingMenu);
+    }
+
+    private void addElementsToFileMenu() {
+        fileMenu.add(openItem);
+        fileMenu.add(saveItem);
+        fileMenu.add(saveAsItem);
+    }
+
+    private void addElementsToEncryptingMenu() {
+        encryptingMenu.add(encryptItem);
+    }
+
+    private void addListeners() {
+        addListenersOfFileMenuElements();
+        addListenersOfEncryptingMenuElements();
+    }
+
+    private void addListenersOfFileMenuElements() {
+        openItem.addActionListener(e -> {
+            try {
+                notepadFrame.openFile();
+            } catch (FileNotFoundException ex) {
+                ex.printStackTrace();
+            }
+        });
+        saveItem.addActionListener(e -> {
+            try {
+                notepadFrame.saveFile();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        });
+        saveAsItem.addActionListener(e -> {
+            try {
+                notepadFrame.saveAs();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        });
+    }
+
+    private void addListenersOfEncryptingMenuElements() {
+        encryptItem.addActionListener(e -> encryptingListener());
+    }
+
+    private void encryptingListener() {
+        String password = JOptionPane.showInputDialog("Key for XOR cipher");
+        if (password != null && !password.equals("")) {
+            notepadFrame.encrypt(password);
+        }
+    }
+}
